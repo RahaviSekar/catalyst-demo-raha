@@ -22,6 +22,22 @@ const LoginMutation = graphql(`
         firstName
         lastName
         email
+        formFields {
+      ... on TextFormFieldValue {
+        __typename
+        entityId
+        text
+        name
+      }
+      ... on DateFormFieldValue {
+        __typename
+        date {
+          utc
+        }
+        entityId
+        name
+      }
+    }
       }
       cart {
         entityId
@@ -41,6 +57,22 @@ const LoginWithTokenMutation = graphql(`
         firstName
         lastName
         email
+        formFields {
+      ... on TextFormFieldValue {
+        __typename
+        entityId
+        text
+        name
+      }
+      ... on DateFormFieldValue {
+        __typename
+        date {
+          utc
+        }
+        entityId
+        name
+      }
+    }
       }
       cart {
         entityId
@@ -118,9 +150,19 @@ async function loginWithPassword(credentials: unknown): Promise<User | null> {
   }
 
   const result = response.data.login;
-
   if (!result.customer || !result.customerAccessToken) {
     return null;
+  }
+  let hobby = '';
+  let dob = '';
+  if (result?.customer?.formFields && result?.customer?.formFields?.length > 0) {
+    result?.customer?.formFields?.forEach((formData: any) => {
+      if (formData?.name == 'Hobby') {
+        hobby = formData?.text;
+      } else if (formData?.name == 'DOB') {
+        dob = formData?.date?.utc;
+      }
+    });
   }
 
   await handleLoginCart(cartId, result.cart?.entityId);
@@ -131,6 +173,8 @@ async function loginWithPassword(credentials: unknown): Promise<User | null> {
     email: result.customer.email,
     customerAccessToken: result.customerAccessToken.value,
     cartId: result.cart?.entityId,
+    hobby,
+    dob
   };
 }
 
@@ -158,7 +202,17 @@ async function loginWithJwt(credentials: unknown): Promise<User | null> {
   if (!result.customer || !result.customerAccessToken) {
     return null;
   }
-
+  let hobby = '';
+  let dob = '';
+  if (result?.customer?.formFields && result?.customer?.formFields?.length > 0) {
+    result?.customer?.formFields?.forEach((formData: any) => {
+      if (formData?.name == 'Hobby') {
+        hobby = formData?.text;
+      } else if (formData?.name == 'DOB') {
+        dob = formData?.date?.utc;
+      }
+    });
+  }
   await handleLoginCart(cartId, result.cart?.entityId);
   await clearAnonymousSession();
 
@@ -168,6 +222,8 @@ async function loginWithJwt(credentials: unknown): Promise<User | null> {
     customerAccessToken: result.customerAccessToken.value,
     impersonatorId,
     cartId: result.cart?.entityId,
+    hobby,
+    dob
   };
 }
 
@@ -206,7 +262,12 @@ const config = {
           customerAccessToken: user.customerAccessToken,
         };
       }
-
+       if (user?.hobby) {
+        token.hobby = user.hobby;
+      }
+       if (user?.dob) {
+        token.dob = user.dob;
+      }
       // user can actually be undefined
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (user?.cartId) {
@@ -236,6 +297,12 @@ const config = {
 
       if (token.user?.cartId !== undefined) {
         session.user.cartId = token.user.cartId;
+      }
+      if (typeof token.hobby === 'string') {
+        session.hobby = token.hobby;
+      }
+      if (typeof token.dob === 'string') {
+        session.dob = token.dob;
       }
 
       return session;

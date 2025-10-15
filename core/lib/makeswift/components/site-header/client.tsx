@@ -20,6 +20,15 @@ type NavigationProps = HeaderSectionProps['navigation'];
 type ContextProps = Omit<HeaderSectionProps, 'navigation'> & {
   navigation: Omit<NavigationProps, 'links'> & {
     links: Awaited<NavigationProps['links']>;
+    session?: {
+      customerAccessToken?:string;
+      user: {
+        name?: string | null;
+        email?: string | null;
+        hobby?: string | null;
+        dob?: string | null;
+      } | null;
+    };
   };
 };
 
@@ -123,6 +132,7 @@ export const MakeswiftHeader = forwardRef(
           logoHref: logo.link?.href ?? passedProps.logoHref,
         }}
         ref={ref}
+        session={passedProps?.session}
       />
     );
   },
