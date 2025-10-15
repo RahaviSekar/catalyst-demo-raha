@@ -3,7 +3,7 @@ import { cache } from 'react';
 
 import { Streamable } from '@/vibes/soul/lib/streamable';
 import { GetLinksAndSectionsQuery, LayoutQuery } from '~/app/[locale]/(default)/page-data';
-import { getSessionCustomerAccessToken } from '~/auth';
+import { auth, getSessionCustomerAccessToken } from '~/auth';
 import { client } from '~/client';
 import { graphql, readFragment } from '~/client/graphql';
 import { revalidate } from '~/client/revalidate-target';
@@ -74,7 +74,8 @@ export const Header = async () => {
   const locale = await getLocale();
 
   const data = await getHeaderData();
-
+  const session = await auth();
+  console.log("---session----",session);
   const logo = data.settings ? logoTransformer(data.settings) : '';
 
   const locales = routing.locales.map((enabledLocales) => ({
@@ -161,6 +162,14 @@ export const Header = async () => {
         activeCurrencyId: streamableActiveCurrencyId,
         currencyAction: switchCurrency,
         switchCurrencyLabel: t('SwitchCurrency.label'),
+        session: {
+        user: session?.user ? {
+          name: session?.user?.name,
+          email: session?.user?.email,
+          hobby: session?.hobby,
+          dob: session?.dob,
+        } : null
+      }
       }}
     />
   );

@@ -3,6 +3,8 @@ import { User } from 'next-auth';
 declare module 'next-auth' {
   interface Session {
     user?: User;
+    hobby?:string;
+    dob?:string;
   }
 
   interface User {
@@ -11,6 +13,8 @@ declare module 'next-auth' {
     cartId?: string | null;
     customerAccessToken?: string;
     impersonatorId?: string | null;
+    hobby?:string | null;
+    dob?:string|null;
   }
 
   interface AnonymousUser {

@@ -121,6 +121,14 @@ interface Props<S extends SearchResult> {
   searchLabel?: string;
   mobileMenuTriggerLabel?: string;
   switchCurrencyLabel?: string;
+   session?: {
+    user: {
+      name?: string | null;
+      email?: string | null;
+      hobby?: string | null;
+      dob?: string | null;
+    } | null;
+  };
 }
 
 const MobileMenuButton = forwardRef<
@@ -288,6 +296,7 @@ export const Navigation = forwardRef(function Navigation<S extends SearchResult>
     searchLabel = 'Search',
     mobileMenuTriggerLabel = 'Toggle navigation',
     switchCurrencyLabel,
+    session,
   }: Props<S>,
   ref: Ref<HTMLDivElement>,
 ) {
@@ -311,7 +320,8 @@ export const Navigation = forwardRef(function Navigation<S extends SearchResult>
 
     return () => window.removeEventListener('scroll', handleScroll);
   }, [setIsSearchOpen]);
-
+  console.log("----session nav---",session);
+  const formattedDOB = session?.user?.dob ? new Date(session.user.dob).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : null;
   return (
     <NavigationMenu.Root
       className={clsx('relative mx-auto w-full max-w-screen-2xl @container', className)}
@@ -541,6 +551,12 @@ export const Navigation = forwardRef(function Navigation<S extends SearchResult>
             linksPosition === 'center' ? 'flex-1' : 'flex-1 @4xl:flex-none',
           )}
         >
+          {session && session?.user&&
+          <div className="user-details">
+            <p>{`Hi ${session?.user?.name}`}</p>
+            <p>{`Hobby: ${session?.user?.hobby}`}</p>
+            <p>{`DOB: ${formattedDOB}`}</p>
+          </div>}
           {searchAction ? (
             <Popover.Root onOpenChange={setIsSearchOpen} open={isSearchOpen}>
               <Popover.Anchor className="absolute left-0 right-0 top-full" />
